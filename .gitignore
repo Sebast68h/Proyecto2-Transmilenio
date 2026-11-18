@@ -1,0 +1,11 @@
+# Datos crudos pesados (las validaciones superan el límite de GitHub)
+data/raw/validaciones/
+
+# Ambiente virtual y temporales de Python
+.venv/
+__pycache__/
+.ipynb_checkpoints/
+
+# Archivos del sistema
+.DS_Store
+Thumbs.db

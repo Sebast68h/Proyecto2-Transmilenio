@@ -57,6 +57,6 @@ _Por completar._
 - El ranking de estaciones sirve para priorizar, no para predecir cuánta gente usará el metro.
 
 ## Equipo
-Juan Esteban Araque Velez
-Miguel Colmenares
-Sebastian Moreno
+- Juan Esteban Araque Velez
+- Miguel Colmenares
+- Sebastian Moreno

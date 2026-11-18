@@ -1,0 +1,3 @@
+# Archivos comprimidos de validaciones: pesan demasiado para GitHub.
+# Se descargan del portal de datos abiertos de TransMilenio (ver README).
+*.zip
