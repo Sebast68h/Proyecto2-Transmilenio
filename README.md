@@ -1,7 +1,3 @@
-# La Caracas en transición
-
-Proyecto 2 de Aplicaciones en Ciencia de Datos (DATA1002), Universidad de los Andes, 2026-2.
-
 ## De qué trata
 
 Las obras del metro cambiaron por completo la troncal Caracas de TransMilenio. Entre 2024 y 2025 cerraron estaciones, abrieron temporales y movieron algunas rutas a la NQS y la carrera 10. En 2026 empezaron a abrir las estaciones definitivas, que van a quedar conectadas con el metro cuando empiece a operar en 2028.
