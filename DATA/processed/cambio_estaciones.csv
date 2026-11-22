@@ -1,0 +1,21 @@
+rol,codigo,estacion,antes,despues,cambio,evento
+cerrada,09123,Calle 76,30984.0,0.0,-30984.0,Calle 72
+nueva,09122,Calle 72 - Areandina,76.0,31975.0,31899.0,Calle 72
+vecina,02304,Heroes - Gel hada,16067.0,21907.0,5840.0,Calle 72
+vecina,04108,Polo –  FINCOMERCIO,7316.0,9139.0,1823.0,Calle 72
+vecina,07102,NQS Calle 75,7244.0,7330.0,86.0,Calle 72
+vecina,09127,Temporal Flores,27893.0,21485.0,-6408.0,Calle 72
+cerrada,09126,Temporal Marly,22162.0,0.0,-22162.0,Calle 53
+nueva,09131,Marly - Calle 57,138.0,27628.0,27490.0,Calle 53
+vecina,07105,MOVISTAR ARENA,7555.0,8016.0,461.0,Calle 53
+vecina,07106,EL CAMPIN,10085.0,10631.0,546.0,Calle 53
+vecina,07107,U. NACIONAL,14641.0,15546.0,905.0,Calle 53
+vecina,09125,Temporal Calle 57,17583.0,14704.0,-2879.0,Calle 53
+vecina,09130,Temporal Avenida 39,17200.0,19625.0,2425.0,Calle 53
+cerrada,09124,Temporal Calle 34,14334.0,0.0,-14334.0,Calle 26
+nueva,09114,Calle 26,4038.0,13213.0,9175.0,Calle 26
+vecina,06109,Centro Memoria,4932.0,4783.0,-149.0,Calle 26
+vecina,06111,Universidades – CityU,8270.0,7614.0,-656.0,Calle 26
+vecina,09129,Temporal Calle 22,3539.0,3430.0,-109.0,Calle 26
+vecina,09130,Temporal Avenida 39,12779.0,11338.0,-1441.0,Calle 26
+vecina,10009,Museo Nacional - FNG,18126.0,16802.0,-1324.0,Calle 26
