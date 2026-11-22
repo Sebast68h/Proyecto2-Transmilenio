@@ -1,0 +1,73 @@
+rol,codigo,estacion,antes,despues,cambio,evento
+cerrada,09123,Calle 76,30984.0,0.0,-30984.0,calle72
+nueva,09122,Calle 72 - Areandina,76.0,31975.0,31899.0,calle72
+vecina,02304,Heroes - Gel hada,16067.0,21907.0,5840.0,calle72
+vecina,04108,Polo –  FINCOMERCIO,7316.0,9139.0,1823.0,calle72
+vecina,07102,NQS Calle 75,7244.0,7330.0,86.0,calle72
+vecina,09127,Temporal Flores,27893.0,21485.0,-6408.0,calle72
+control,02000,Portal Norte - Unicervantes,70915.0,70730.0,-185.0,calle72
+control,02001,Centro Comercial Santa Fe,8926.0,9185.0,259.0,calle72
+control,02101,Toberin,25865.0,28027.0,2162.0,calle72
+control,02102,Calle 161,4027.0,4198.0,171.0,calle72
+control,02103,Mazurén,12381.0,12554.0,173.0,calle72
+control,02104,Calle 146,7070.0,7297.0,227.0,calle72
+control,02105,Calle 142,10690.0,11087.0,397.0,calle72
+control,02200,Alcalá – Colegio S. Tomás Dominicos,21473.0,23769.0,2296.0,calle72
+control,02201,Prado,10024.0,9406.0,-618.0,calle72
+control,02202,Calle 127,18755.0,19914.0,1159.0,calle72
+control,02204,Pepe Sierra Universidad UTEL,12552.0,14856.0,2304.0,calle72
+control,02205,Calle 106 - Explora Maletas,11385.0,13096.0,1711.0,calle72
+control,02300,Calle 100 - Marketmedios,41733.0,41216.0,-517.0,calle72
+control,02302,Virrey - Cendiatra,15033.0,15470.0,437.0,calle72
+control,02303,Calle 85 - GATO DUMAS,13730.0,14084.0,354.0,calle72
+control,02502,Terminal,14393.0,14818.0,425.0,calle72
+cerrada,09126,Temporal Marly,22162.0,0.0,-22162.0,calle53
+nueva,09131,Marly - Calle 57,138.0,27628.0,27490.0,calle53
+vecina,07105,MOVISTAR ARENA,7555.0,8016.0,461.0,calle53
+vecina,07106,EL CAMPIN,10085.0,10631.0,546.0,calle53
+vecina,07107,U. NACIONAL,14641.0,15546.0,905.0,calle53
+vecina,09125,Temporal Calle 57,17583.0,14704.0,-2879.0,calle53
+vecina,09130,Temporal Avenida 39,17200.0,19625.0,2425.0,calle53
+control,02000,Portal Norte - Unicervantes,69170.0,70440.0,1270.0,calle53
+control,02001,Centro Comercial Santa Fe,9022.0,9394.0,372.0,calle53
+control,02101,Toberin,27836.0,28890.0,1054.0,calle53
+control,02102,Calle 161,4189.0,4312.0,123.0,calle53
+control,02103,Mazurén,11941.0,12549.0,608.0,calle53
+control,02104,Calle 146,7082.0,7294.0,212.0,calle53
+control,02105,Calle 142,11094.0,11409.0,315.0,calle53
+control,02200,Alcalá – Colegio S. Tomás Dominicos,23070.0,24125.0,1055.0,calle53
+control,02201,Prado,9829.0,10167.0,338.0,calle53
+control,02202,Calle 127,19912.0,20676.0,764.0,calle53
+control,02204,Pepe Sierra Universidad UTEL,15157.0,15643.0,486.0,calle53
+control,02205,Calle 106 - Explora Maletas,12952.0,13207.0,255.0,calle53
+control,02300,Calle 100 - Marketmedios,41196.0,42234.0,1038.0,calle53
+control,02302,Virrey - Cendiatra,15104.0,15103.0,-1.0,calle53
+control,02303,Calle 85 - GATO DUMAS,14163.0,14297.0,134.0,calle53
+control,02304,Heroes - Gel hada,20860.0,21785.0,925.0,calle53
+control,02305,Bicicletero Portal Norte,37.0,37.0,0.0,calle53
+control,02502,Terminal,14723.0,15635.0,912.0,calle53
+cerrada,09124,Temporal Calle 34,14334.0,0.0,-14334.0,calle26
+nueva,09114,Calle 26,4038.0,13213.0,9175.0,calle26
+vecina,06109,Centro Memoria,4932.0,4783.0,-149.0,calle26
+vecina,06111,Universidades – CityU,8270.0,7614.0,-656.0,calle26
+vecina,09129,Temporal Calle 22,3539.0,3430.0,-109.0,calle26
+vecina,09130,Temporal Avenida 39,12779.0,11338.0,-1441.0,calle26
+vecina,10009,Museo Nacional - FNG,18126.0,16802.0,-1324.0,calle26
+control,02000,Portal Norte - Unicervantes,64930.0,60988.0,-3942.0,calle26
+control,02001,Centro Comercial Santa Fe,8115.0,7665.0,-450.0,calle26
+control,02101,Toberin - Foundever,22511.0,24651.0,2140.0,calle26
+control,02102,Calle 161,3875.0,3663.0,-212.0,calle26
+control,02103,Mazurén,11097.0,10072.0,-1025.0,calle26
+control,02104,Calle 146,6945.0,6428.0,-517.0,calle26
+control,02105,Calle 142,10368.0,9579.0,-789.0,calle26
+control,02200,Alcalá – Colegio S. Tomás Dominicos,19180.0,18116.0,-1064.0,calle26
+control,02201,Prado,9123.0,8587.0,-536.0,calle26
+control,02202,Calle 127 - L Oreal Paris,19764.0,18014.0,-1750.0,calle26
+control,02204,Pepe Sierra,11623.0,12870.0,1247.0,calle26
+control,02205,Calle 106 - Explora Maletas,10307.0,10257.0,-50.0,calle26
+control,02300,Calle 100 - Marketmedios,40971.0,37980.0,-2991.0,calle26
+control,02302,Virrey,12340.0,11841.0,-499.0,calle26
+control,02303,Calle 85 - GATO DUMAS,13727.0,12932.0,-795.0,calle26
+control,02304,Heroes - Gel hada,14053.0,13326.0,-727.0,calle26
+control,02305,Bicicletero Portal Norte,22.0,21.0,-1.0,calle26
+control,02502,Terminal,13098.0,12050.0,-1048.0,calle26
