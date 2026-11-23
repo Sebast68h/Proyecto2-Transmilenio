@@ -1,0 +1,10 @@
+estacion_metro,direccion,integracion,estacion_referencia,codigo,validaciones_pico
+Estación 11,Calle 2 - Calle 3,directa,Avenida Jimenez,09128,7457.0
+Estación 11,Calle 2 - Calle 3,directa,Hortua,09107,3429.0
+Estación 12,Calle 11 - Calle 13,directa,Avenida Jimenez,09128,7457.0
+Estación 13,Calle 24A - Calle 26,cercana,Calle 26,09114,6999.0
+Estación 14,Calle 42 - Calle 44,directa,Av. 39,09130,7592.0
+Estación 14,Calle 42 - Calle 44,directa,Calle 53,09131,9481.0
+Estación 15,Calle 61 - Calle 63,directa,Calle 57,09125,6102.0
+Estación 15,Calle 61 - Calle 63,directa,Flores,09127,8298.0
+Estación 16,Calle 72 - Calle 74,directa,Calle 72,09122,12975.0
