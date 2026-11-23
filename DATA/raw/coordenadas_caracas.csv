@@ -1,0 +1,20 @@
+tipo,codigo,estacion,lat,lon
+transmilenio,09107,Hortua,4.590775,-74.090305
+transmilenio,09128,Avenida Jimenez,4.600167,-74.082327
+transmilenio,09110,Av. Jimenez (Eje Ambiental),4.602953,-74.078968
+transmilenio,09129,Calle 22,4.609482,-74.07582
+transmilenio,09114,Calle 26,4.616652,-74.072158
+transmilenio,09124,"Calle 34 (temporal, cerrada)",4.619895,-74.070454
+transmilenio,09130,Av. 39,4.626535,-74.068764
+transmilenio,09126,"Marly (temporal, cerrada)",4.636266,-74.067024
+transmilenio,09125,Calle 57,4.645014,-74.065448
+transmilenio,09127,Flores,4.652761,-74.063996
+transmilenio,09122,Calle 72,4.658238,-74.062068
+transmilenio,09123,Calle 76 (cerrada),4.663029,-74.061261
+transmilenio,09131,Calle 53,4.6405,-74.0663
+metro,,Estación 11,4.5951,-74.0862
+metro,,Estación 12,4.601,-74.0815
+metro,,Estación 13,4.614,-74.0738
+metro,,Estación 14,4.6305,-74.068
+metro,,Estación 15,4.6475,-74.0651
+metro,,Estación 16,4.6605,-74.0617
