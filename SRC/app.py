@@ -36,7 +36,7 @@ if pagina=="Resumen":
     a.metric("Reaperturas analizadas",3,str(series["fecha"].nunique())+" días hábiles",delta_color="off")
     b.metric("Nodo crítico",nodo["estacion_metro"],f"{nodo['validaciones_pico']:,.0f} validaciones en hora pico",delta_color="off")
     c.metric("Demanda de la 76 recuperada por la 72",f"{c72[c72['rol']=='nueva']['despues'].sum()/c72[c72['rol']=='cerrada']['antes'].sum():.0%}")
-    d.metric("Uso máximo de los torniquetes",f"{(accesos['validaciones_promedio']/60/(accesos['torniquetes']*18)).max():.0%}","con 18 pasajeros por minuto",delta_color="off")
+    d.metric("Uso máximo de los torniquetes",f"{(accesos['validaciones_maximo']/60/(accesos['torniquetes']*10)).max():.0%}","día más cargado, 10 pasajeros por minuto",delta_color="off")
     linea["tipo"]="en obra o cerrada"
     linea.loc[linea["validaciones_pico"].notna(),"tipo"]="hoy"
     linea.loc[linea["validaciones_pico"].rank(ascending=False)<=top,"tipo"]="de las más cargadas"
@@ -95,21 +95,22 @@ elif pagina=="Metro":
     b.plotly_chart(px.bar(hoy,x="estacion",y="validaciones_pico",color="zona del metro",color_discrete_map=colores,
                           title="Demanda hoy en las estaciones de la Caracas"),width="stretch")
     st.dataframe(zonas[zonas["integracion"].isin(conexiones)],hide_index=True,width="stretch")
-    st.info("La estación 16 (Calle 72 a 74) es el nodo crítico: casi 13.000 validaciones en hora pico, un 50 % más que la siguiente, y conexión directa con TransMilenio.")
+    st.info("La estación 16 (Calle 72 a 74) es el nodo crítico: casi 13.000 validaciones en hora pico, un 50 % más que la siguiente, y conexión directa con la Calle 76 de TransMilenio.")
     st.success("Recomendación: diseñar la conexión de la estación 16 para al menos 13.000 validaciones en hora pico y medir la demanda de Hospital, Calle 45 y Calle 63 cuando abran.")
 else:
     f1,f2,f3=st.columns(3)
     filas=f1.multiselect("Estación y acceso",list(accesos["fila"].unique()),default=list(accesos["fila"].unique()))
     horas=f2.slider("Horas",4,23,(5,22))
-    capacidad=f3.slider("Capacidad por torniquete piso a techo (pasajeros por minuto)",8,18,18)
+    capacidad=f3.slider("Capacidad por torniquete piso a techo (pasajeros por minuto)",8,18,10)
     f=accesos[accesos["fila"].isin(filas)&accesos["hora"].between(horas[0],horas[1])].copy()
     f["uso"]=f["validaciones_promedio"]/60/(f["torniquetes"]*capacidad)
+    f["uso_dia_cargado"]=f["validaciones_maximo"]/60/(f["torniquetes"]*capacidad)
     st.plotly_chart(px.density_heatmap(f,x="hora",y="fila",z="uso",histfunc="sum",nbinsx=horas[1]-horas[0]+1,text_auto=".0%",range_color=[0,1],
-                                       color_continuous_scale=["#F7F5F0","#F08A7E","#D52B1E"],title="Uso de la capacidad de los torniquetes por hora"),width="stretch")
+                                       color_continuous_scale=["#F7F5F0","#F08A7E","#D52B1E"],title="Uso promedio de la capacidad de los torniquetes por hora"),width="stretch")
     a,b=st.columns(2)
-    a.subheader("Uso en la hora más cargada")
-    maximo=f.groupby("fila")["uso"].max().reset_index()
-    for fila,uso in zip(maximo["fila"],maximo["uso"]):
+    a.subheader("Uso en la hora pico del día más cargado")
+    maximo=f.groupby("fila")["uso_dia_cargado"].max().reset_index()
+    for fila,uso in zip(maximo["fila"],maximo["uso_dia_cargado"]):
         a.progress(min(uso,1.0),text=fila+": "+f"{uso:.0%}")
     b.plotly_chart(px.line(f,x="hora",y="validaciones_promedio",color="fila",title="Validaciones por hora en cada acceso"),width="stretch")
     st.caption("Uso = validaciones por minuto ÷ (torniquetes × capacidad). Los torniquetes piso a techo dejan pasar hasta 18 personas por minuto según los fabricantes; en la estación real pasan menos.")

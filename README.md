@@ -2,6 +2,13 @@
 
 Proyecto 2 de Aplicaciones en Ciencia de Datos (DATA1002), Universidad de los Andes.
 
+Integrantes: Sebastián Moreno, Miguel, Juan y Mateo.
+
+## Enlaces
+
+- Dashboard: [pegar link .streamlit.app]
+- Presentación: [reports/presentacion.pdf](reports/presentacion.pdf) · [Canva](https://www.canva.com/d/sj8RH_3zHK1KxVs)
+
 ## Problema
 
 La troncal Caracas está en obras por el metro. Sus estaciones se cierran y reabren, y cada cambio mueve a miles de usuarios. En 2028 algunas tendrán conexión con el metro.
@@ -47,12 +54,30 @@ Se unen por el código de la estación, con una tabla de zonas que dice qué est
 - Las validaciones son entradas pagas, no personas.
 - En las estaciones 11, 14 y 15 del metro la demanda es un promedio de estaciones cercanas.
 - No sabemos cuántos transbordos traerá el metro.
+- La Calle 26 solo tiene 8 días hábiles antes de la reapertura (no hay datos del 1 al 5 de junio y el 8 y el 15 fueron festivos), y además coincidió con vacaciones.
+- Los 10 pasajeros por minuto por torniquete son un supuesto; hay que medirlo en campo.
+
+## Estructura
+
+```
+├── data/
+│   ├── raw/          datos originales (las validaciones se descargan del portal de TransMilenio)
+│   └── processed/    tablas limpias que usa el dashboard
+├── notebooks/        procesamiento, análisis, ranking y torniquetes
+├── SRC/app.py        dashboard en Streamlit
+├── reports/          presentación y justificación de estaciones
+└── requirements.txt
+```
+
+Orden de los notebooks: `procesamiento_validaciones` → `analisis_3_estaciones` → `carga_estaciones_metro` → `ranking_metro` → `torniquetes`.
 
 ## Cómo correrlo
 
+Desde la carpeta principal del repositorio:
+
 ```
 pip install -r requirements.txt
-python -m streamlit run app.py
+python -m streamlit run SRC/app.py
 ```
 
 ## Fuentes
