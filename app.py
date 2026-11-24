@@ -105,7 +105,11 @@ else:
     f=accesos[accesos["fila"].isin(filas)&accesos["hora"].between(horas[0],horas[1])].copy()
     f["uso"]=f["validaciones_promedio"]/60/(f["torniquetes"]*capacidad)
     st.plotly_chart(px.density_heatmap(f,x="hora",y="fila",z="uso",histfunc="sum",nbinsx=horas[1]-horas[0]+1,text_auto=".0%",range_color=[0,1],
-                                       color_continuous_scale=["#4B4F8C","#FF6B3D","#E6332A"],title="Uso de la capacidad de los torniquetes por hora"),width="stretch")
+                                       color_continuous_scale=[
+    [0.0,"#ff0101ff" ],  # amarillo
+    [0.5, "#00ffddb4"],  # blanco como punto neutro
+    [1.0, "#00ffddb4"]
+] ,title="Uso de la capacidad de los torniquetes por hora"),width="stretch")
     a,b=st.columns(2)
     a.subheader("Uso en la hora más cargada")
     maximo=f.groupby("fila")["uso"].max().reset_index()
