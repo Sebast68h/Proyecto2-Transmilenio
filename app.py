@@ -2,10 +2,10 @@ import pandas as pd
 import plotly.express as px
 import streamlit as st
 st.set_page_config(page_title="Troncal Caracas y Metro",layout="wide")
-px.defaults.template="plotly_dark"
-colores={"zona":"#E6332A","control":"#6C72D9","nueva":"#E6332A","cerrada":"#FF3D7F","vecina":"#6C72D9","directa":"#E6332A",
-         "cercana":"#FF6B3D","norte":"#E6332A","sur":"#6C72D9","sí":"#E6332A","no":"#6C72D9","hoy":"#E8E8F5",
-         "de las más cargadas":"#FF6B3D","en obra o cerrada":"#4B4F8C","metro directa":"#E6332A","metro cercana":"#FF6B3D","(?)":"#4B4F8C"}
+px.defaults.template="plotly_white"
+colores={"zona":"#D52B1E","control":"#9A968E","nueva":"#D52B1E","cerrada":"#8E1B13","vecina":"#9A968E","directa":"#D52B1E",
+         "cercana":"#F08A7E","norte":"#D52B1E","sur":"#9A968E","sí":"#D52B1E","no":"#C9C5BC","hoy":"#6B6B6B",
+         "de las más cargadas":"#D52B1E","en obra o cerrada":"#C9C5BC","metro directa":"#8E1B13","metro cercana":"#F08A7E","(?)":"#C9C5BC"}
 ruta="data/processed/"
 comp=pd.read_csv(ruta+"comparacion_control.csv")
 cambios=pd.read_csv(ruta+"cambio_estaciones.csv")
@@ -26,7 +26,7 @@ linea=pd.DataFrame([["Hortúa","09107","",""],["Hospital","","directa","E11"],["
 linea["orden"]=range(len(linea))
 linea=linea.merge(demanda,on="codigo",how="left",validate="m:1")
 pagina=st.radio("Página",["Resumen","Reaperturas","Metro","Torniquetes"],horizontal=True,label_visibility="collapsed")
-st.markdown("<div style='background:#E6332A;padding:14px 22px;border-radius:10px;margin-bottom:12px'><h2 style='color:white;margin:0'>TRONCAL CARACAS · "+pagina.upper()+"</h2></div>",unsafe_allow_html=True)
+st.markdown("<div style='background:#D52B1E;padding:14px 22px;border-radius:10px;margin-bottom:12px'><h2 style='color:white;margin:0'>TRONCAL CARACAS · "+pagina.upper()+"</h2></div>",unsafe_allow_html=True)
 if pagina=="Resumen":
     top=st.slider("Resaltar las estaciones más cargadas (cuántas)",0,9,3)
     st.write("¿Cómo se reacomoda la demanda cuando la Caracas recupera sus estaciones definitivas, y qué estaciones, por su demanda actual y su conexión con el metro, deben prepararse primero antes de 2028?")
@@ -45,7 +45,7 @@ if pagina=="Resumen":
     fig=px.scatter(pd.concat([estaciones,metro]),x="orden",y="y",size="tamano",size_max=35,color="tipo",symbol="forma",text="etiqueta",
                    color_discrete_map=colores,symbol_map={"estación":"circle","metro":"square"},hover_data={"validaciones_pico":":,.0f"},
                    title="Troncal Caracas de sur a norte (no a escala)")
-    fig.add_hline(y=0,line_color="#E6332A",line_width=8,layer="below")
+    fig.add_hline(y=0,line_color="#D52B1E",line_width=8,layer="below")
     fig.update_traces(textposition="bottom center")
     fig.update_layout(height=450,xaxis_visible=False,yaxis_visible=False,yaxis_range=[-0.5,0.9],legend_title="")
     st.plotly_chart(fig,width="stretch")
@@ -65,7 +65,7 @@ elif pagina=="Reaperturas":
     diaria=diaria.merge(promedio_antes,on="evento",validate="m:1").merge(reapertura,on="evento",validate="m:1")
     diaria["indice"]=(diaria["validaciones"]/diaria["promedio_antes"]*100).round(1)
     diaria["dia"]=(diaria["fecha"]-diaria["reapertura"]).dt.days
-    linea_indice=px.scatter(diaria,x="dia",y="indice",color="evento",opacity=0.4,trendline="rolling",trendline_options=dict(window=5,min_periods=1),color_discrete_map={"Calle 72":"#E6332A","Calle 53":"#FF6B3D","Calle 26":"#F5C04A"},
+    linea_indice=px.scatter(diaria,x="dia",y="indice",color="evento",opacity=0.4,trendline="rolling",trendline_options=dict(window=5,min_periods=1),color_discrete_map={"Calle 72":"#D52B1E","Calle 53":"#8E1B13","Calle 26":"#F08A7E"},
                 labels={"dia":"Días desde la reapertura","indice":"Índice (antes = 100)"},title="Tendencia de la zona: promedio de 5 días (promedio de antes = 100)")
     b.plotly_chart(linea_indice.add_hline(y=100,line_dash="dot").add_vline(x=0,line_dash="dot"),width="stretch")
     estaciones=cambios[cambios["evento"]==evento].copy()
@@ -74,10 +74,10 @@ elif pagina=="Reaperturas":
     estaciones.loc[estaciones["rol"].isin(["cerrada","nueva"]),"estacion"]=cerrada+" → "+nueva
     estaciones=estaciones.groupby("estacion")[["antes","despues"]].sum().reset_index().sort_values("antes",ascending=False)
     puntos=pd.concat([estaciones.assign(periodo="antes",validaciones=estaciones["antes"]),estaciones.assign(periodo="después",validaciones=estaciones["despues"])])
-    pesas=px.scatter(puntos,x="validaciones",y="estacion",color="periodo",color_discrete_map={"antes":"#9A9AB0","después":"#E6332A"},
+    pesas=px.scatter(puntos,x="validaciones",y="estacion",color="periodo",color_discrete_map={"antes":"#B8B5AE","después":"#D52B1E"},
                      title="Validaciones diarias por estación antes → después: "+evento)
     for est,antes,despues in zip(estaciones["estacion"],estaciones["antes"],estaciones["despues"]):
-        pesas.add_shape(type="line",x0=antes,x1=despues,y0=est,y1=est,line_color="#9A9AB0",line_width=3,layer="below")
+        pesas.add_shape(type="line",x0=antes,x1=despues,y0=est,y1=est,line_color="#C9C5BC",line_width=3,layer="below")
     st.plotly_chart(pesas.update_traces(marker_size=14),width="stretch")
     st.info("Cuando una estación reabre, la gente se pasa en pocas semanas a la más cercana: la 72 recibió el 103 % de la demanda de la 76. En la 72 fue un reacomodo (la zona creció casi igual que el control), en la 53 llegaron usuarios nuevos y en la 26 influyeron las vacaciones. En los tres casos la gente cambió de estación dentro de la misma zona, no de troncal.")
     st.success("Recomendación: reforzar rutas en las primeras semanas de cada conexión con el metro, que es cuando la gente se reacomoda.")
@@ -105,7 +105,7 @@ else:
     f=accesos[accesos["fila"].isin(filas)&accesos["hora"].between(horas[0],horas[1])].copy()
     f["uso"]=f["validaciones_promedio"]/60/(f["torniquetes"]*capacidad)
     st.plotly_chart(px.density_heatmap(f,x="hora",y="fila",z="uso",histfunc="sum",nbinsx=horas[1]-horas[0]+1,text_auto=".0%",range_color=[0,1],
-                                       color_continuous_scale=["#4B4F8C","#FF6B3D","#E6332A"],title="Uso de la capacidad de los torniquetes por hora"),width="stretch")
+                                       color_continuous_scale=["#F7F5F0","#F08A7E","#D52B1E"],title="Uso de la capacidad de los torniquetes por hora"),width="stretch")
     a,b=st.columns(2)
     a.subheader("Uso en la hora más cargada")
     maximo=f.groupby("fila")["uso"].max().reset_index()
