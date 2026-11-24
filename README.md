@@ -1,58 +1,62 @@
-## De qué trata
+# Troncal Caracas: reaperturas y llegada del metro
 
-Las obras del metro cambiaron por completo la troncal Caracas de TransMilenio. Entre 2024 y 2025 cerraron estaciones, abrieron temporales y movieron algunas rutas a la NQS y la carrera 10. En 2026 empezaron a abrir las estaciones definitivas, que van a quedar conectadas con el metro cuando empiece a operar en 2028.
+Proyecto 2 de Aplicaciones en Ciencia de Datos (DATA1002), Universidad de los Andes.
 
-Queremos entender qué pasa con los pasajeros cuando estas estaciones vuelven a abrir, y usar eso para saber qué estaciones de la Caracas deberían prepararse primero para la llegada del metro.
+## Problema
 
-**Pregunta:** ¿Cómo se reacomoda la demanda de TransMilenio cuando la Caracas recupera sus estaciones definitivas, y cuáles de ellas serán los puntos críticos cuando llegue el metro en 2028?
+La troncal Caracas está en obras por el metro. Sus estaciones se cierran y reabren, y cada cambio mueve a miles de usuarios. En 2028 algunas tendrán conexión con el metro.
 
-**Para quién:** TransMilenio y la Secretaría de Movilidad.
+- Afectados: los usuarios de la Caracas.
+- Quién decide: TransMilenio y la Secretaría de Movilidad (accesos, torniquetes y frecuencias).
 
-## Qué queremos lograr
+## Pregunta
 
-- Medir cuántos pasajeros ganaron las estaciones nuevas (Calle 26, Calle 72 y Calle 53) y qué pasó con las estaciones cercanas.
-- Con ese patrón, estimar qué puede pasar cuando abran las definitivas que faltan.
-- Hacer un ranking de las estaciones que deberían prepararse primero para el metro.
+¿Cómo se reacomoda la demanda cuando la Caracas recupera sus estaciones definitivas, y qué estaciones, por su demanda actual y su conexión con el metro, deben prepararse primero antes de 2028?
 
 ## Datos
 
-- **Validaciones troncales** – TransMilenio. Período: _por definir_.
-- **Estaciones troncales** – TransMilenio.
-- **Estaciones de la Línea 1 del Metro** – Empresa Metro de Bogotá.
-- **Cronología de cierres y aperturas** – la armamos nosotros con comunicados oficiales.
+| Fuente | Origen | Qué aporta |
+|---|---|---|
+| Validaciones troncales | Datos abiertos TransMilenio, 2026 | Cuánta gente entra a cada estación |
+| Planos de las estaciones del metro | Empresa Metro de Bogotá | Qué estaciones tendrán conexión |
 
+Se unen por el código de la estación, con una tabla de zonas que dice qué estaciones de TransMilenio atienden cada estación del metro. Juntas permiten saber qué estaciones con metro tienen más demanda.
 
-## Cómo lo hacemos
+## Limpieza
 
-Para cada estación que abrió, comparamos las validaciones de unas semanas antes y después, tanto en la estación como en las que quedan cerca. Para no sacar conclusiones equivocadas, comparamos con una troncal que no tuvo cambios y tenemos en cuenta a los colados.
+- Dejamos solo las validaciones del día de cada archivo y un nombre por código.
+- Quitamos festivos y el día de las marchas.
+- Para el metro usamos solo noviembre, porque la Calle 22 estuvo cerrada en octubre.
+- Sumamos las dos estaciones de la Av. Jiménez, que están en el mismo cruce.
 
-## Organización
+## Conclusiones
 
-- `data/raw`: datos originales, sin modificar.
-- `data/processed`: datos limpios y unidos.
-- `notebooks`: el análisis paso a paso.
-- `src`: funciones que usamos varias veces.
-- `outputs`: gráficos y tablas.
-- `requirements.txt`: librerías necesarias.
+1. Cuando una estación reabre, la gente se pasa en pocas semanas a la más cercana. La Calle 72 recibió el 103 % de la demanda de la 76.
+2. La zona de la Calle 72 a 74 (estación 16 del metro) es el nodo crítico: casi 13.000 validaciones en hora pico, un 50 % más que la siguiente.
+3. En los días más cargados, los accesos norte de la Calle 72 y de la Calle 26 llegarían al 81 % de su capacidad si los torniquetes piso a techo dejan pasar 10 personas por minuto.
 
-Las validaciones originales no se suben porque pesan demasiado.
+## Recomendaciones
 
-## Cómo correrlo
-
-_Por completar._
-
-## Resultados
-
-_Por completar._
+1. Agregar 2 torniquetes en el acceso norte de la Calle 72 (de 7 a 9) y 1 en el de la Calle 26 (de 5 a 6) antes de 2028, para quedar por debajo del 70 % en los días más cargados.
+2. Diseñar la conexión de la estación 16 para al menos 13.000 validaciones en hora pico.
+3. Reforzar las rutas en las primeras semanas después de abrir cada conexión.
+4. Medir en campo los torniquetes piso a techo y la demanda de Hospital, Calle 45 y Calle 63 cuando abran.
 
 ## Limitaciones
 
-- Las validaciones muestran dónde se sube la gente, pero no por dónde viaja ni dónde se baja.
-- Cuentan pagos, no personas: los colados no aparecen.
-- Son pocos eventos, así que los resultados son una aproximación.
-- El ranking de estaciones sirve para priorizar, no para predecir cuánta gente usará el metro.
+- Las validaciones son entradas pagas, no personas.
+- En las estaciones 11, 14 y 15 del metro la demanda es un promedio de estaciones cercanas.
+- No sabemos cuántos transbordos traerá el metro.
 
-## Equipo
-- Juan Esteban Araque Velez
-- Miguel Colmenares
-- Sebastian Moreno
+## Cómo correrlo
+
+```
+pip install -r requirements.txt
+python -m streamlit run app.py
+```
+
+## Fuentes
+
+- TransMilenio S.A. Validaciones del componente troncal (datos abiertos).
+- Empresa Metro de Bogotá. Planos de las estaciones 10 a 16.
+- @VIDJCB (2026). Video de dron de la obra del metro. [pegar link]

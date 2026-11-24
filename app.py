@@ -1,302 +1,117 @@
 import pandas as pd
 import plotly.express as px
 import streamlit as st
-
 st.set_page_config(page_title="Troncal Caracas y Metro",layout="wide")
-
-ROJO="#E6332A"
-NARANJA="#FF6B3D"
-ROSA="#FF3D7F"
-AZUL="#6C72D9"
-AZUL_OSCURO="#4B4F8C"
-FONDO="#12122A"
-TEXTO="#E8E8F5"
-GRIS="#9A9AC0"
-colores={"zona":ROJO,"control":AZUL,"nueva":ROJO,"cerrada":ROSA,"vecina":AZUL,
-         "directa":ROJO,"cercana":NARANJA,"sí":ROJO,"no":AZUL,"norte":ROJO,"sur":AZUL}
-
-
-def oscuro(fig,alto=380):
-    fig.update_layout(paper_bgcolor="rgba(0,0,0,0)",plot_bgcolor="rgba(0,0,0,0)",font_color=TEXTO,height=alto,
-                      title_x=0.5,margin=dict(l=20,r=20,t=60,b=20),legend=dict(orientation="h",y=-0.18,title_text=""))
-    fig.update_xaxes(gridcolor=AZUL_OSCURO,zerolinecolor=AZUL_OSCURO)
-    fig.update_yaxes(gridcolor=AZUL_OSCURO,zerolinecolor=AZUL_OSCURO)
-    return fig
-
-
-def encabezado(titulo,subtitulo):
-    st.markdown(f"<div style='background:{ROJO};padding:16px 24px;border-radius:10px;margin-bottom:16px'>"
-                f"<div style='color:white;font-size:28px;font-weight:700'>{titulo}</div>"
-                f"<div style='color:#FFE1DE;font-size:15px'>{subtitulo}</div></div>",unsafe_allow_html=True)
-
-
-def tarjeta(titulo,valor,detalle,color=TEXTO):
-    st.markdown(f"<div style='text-align:center;padding:10px 0'>"
-                f"<div style='color:{GRIS};font-size:14px'>{titulo}</div>"
-                f"<div style='color:{color};font-size:36px;font-weight:700'>{valor}</div>"
-                f"<div style='color:{GRIS};font-size:13px'>{detalle}</div></div>",unsafe_allow_html=True)
-
-
-def anillo(titulo,valor,color):
-    lleno=min(valor,1)
-    fig=px.pie(values=[lleno,1-lleno],hole=0.72,color_discrete_sequence=[color,AZUL_OSCURO])
-    fig.update_traces(textinfo="none",sort=False,hoverinfo="skip")
-    fig.update_layout(showlegend=False,height=120,margin=dict(l=0,r=0,t=0,b=0),paper_bgcolor="rgba(0,0,0,0)",
-                      annotations=[dict(text=f"{valor:.0%}",showarrow=False,font=dict(size=22,color=TEXTO))])
-    st.markdown(f"<div style='text-align:center;color:{GRIS};font-size:14px'>{titulo}</div>",unsafe_allow_html=True)
-    st.plotly_chart(fig,width="stretch",config={"displayModeBar":False})
-
-
-def numero(x):
-    return f"{x:,.0f}".replace(",",".")
-
-
-comparaciones=pd.read_csv("data/processed/comparacion_control.csv")
-cambios=pd.read_csv("data/processed/cambio_estaciones.csv",dtype={"codigo":str})
-series=pd.read_csv("data/processed/series_diarias.csv")
-ranking=pd.read_csv("data/processed/ranking_metro.csv")
-zonas=pd.read_csv("data/processed/zonas_metro.csv",dtype={"codigo":str})
-demanda=pd.read_csv("data/processed/demanda_pico.csv",dtype={"codigo":str})
-
-estaciones=pd.DataFrame([
-    [0,"Hortúa","09107",None,None],
-    [1,"Hospital",None,"Estación 11","directa"],
-    [2,"Tercer Milenio",None,None,None],
-    [3,"Av. Jiménez","09128","Estación 12","directa"],
-    [4,"Calle 19",None,None,None],
-    [5,"Calle 22","09129",None,None],
-    [6,"Calle 26","09114","Estación 13","cercana"],
-    [7,"Av. 39","09130",None,None],
-    [8,"Calle 45",None,"Estación 14","directa"],
-    [9,"Calle 53","09131",None,None],
-    [10,"Calle 57","09125",None,None],
-    [11,"Calle 63",None,"Estación 15","directa"],
-    [12,"Flores","09127",None,None],
-    [13,"Calle 72","09122",None,None],
-    [14,"Calle 76",None,"Estación 16","directa"],
-],columns=["orden","estacion","codigo","metro","conexion"])
-cruces=pd.DataFrame([[3,"Eje Ambiental / Américas"],[6,"Troncal Calle 26"],[15,"AutoNorte / Calle 80"]],columns=["orden","troncal"])
-linea=estaciones.merge(demanda,on="codigo",how="left",validate="m:1")
-
-torniquetes=pd.DataFrame([
-    ["Calle 72","norte",5],["Calle 72","sur",5],
-    ["Calle 53","norte",6],["Calle 53","sur",6],
-    ["Calle 26","norte",5],["Calle 26","sur",5],
-],columns=["estacion","acceso","torniquetes"])
+px.defaults.template="plotly_dark"
+colores={"zona":"#E6332A","control":"#6C72D9","nueva":"#E6332A","cerrada":"#FF3D7F","vecina":"#6C72D9","directa":"#E6332A",
+         "cercana":"#FF6B3D","norte":"#E6332A","sur":"#6C72D9","sí":"#E6332A","no":"#6C72D9","hoy":"#E8E8F5",
+         "de las más cargadas":"#FF6B3D","en obra o cerrada":"#4B4F8C","metro directa":"#E6332A","metro cercana":"#FF6B3D","(?)":"#4B4F8C"}
+ruta="data/processed/"
+comp=pd.read_csv(ruta+"comparacion_control.csv")
+cambios=pd.read_csv(ruta+"cambio_estaciones.csv")
+series=pd.read_csv(ruta+"series_diarias.csv")
+ranking=pd.read_csv(ruta+"ranking_metro.csv")
+zonas=pd.read_csv(ruta+"zonas_metro.csv",dtype={"codigo":str})
+demanda=pd.read_csv(ruta+"demanda_pico.csv",dtype={"codigo":str})
 tablas=[]
-for i in range(len(torniquetes)):
-    fila=torniquetes.iloc[i]
-    carpeta="data/processed/"+fila["estacion"].lower().replace(" ","")+"-diarias/"
-    promedio=pd.read_csv(carpeta+"promedio_por_hora_"+fila["acceso"]+".csv")
-    promedio["estacion"]=fila["estacion"]
-    promedio["acceso"]=fila["acceso"]
-    promedio["torniquetes"]=fila["torniquetes"]
-    tablas.append(promedio)
+for est,n in [("calle72",7),("calle53",6),("calle26",5)]:
+    for acc in ["norte","sur"]:
+        t=pd.read_csv(ruta+est+"-diarias/promedio_por_hora_"+acc+".csv")
+        tablas.append(t.assign(fila=est.replace("calle","Calle ")+" "+acc,acceso=acc,torniquetes=n))
 accesos=pd.concat(tablas,ignore_index=True)
-accesos["fila"]=accesos["estacion"]+" - "+accesos["acceso"]
-
-st.sidebar.markdown(f"<div style='color:{ROJO};font-size:22px;font-weight:700'>Troncal Caracas</div>",unsafe_allow_html=True)
-pagina=st.sidebar.radio("Página",["Resumen","Reaperturas","Metro","Torniquetes","Conclusiones"])
-st.sidebar.markdown("---")
-st.sidebar.markdown(f"<div style='color:{ROJO};font-weight:700'>Filtros</div>",unsafe_allow_html=True)
-
-
+linea=pd.DataFrame([["Hortúa","09107","",""],["Hospital","","directa","E11"],["Tercer Milenio","","",""],["Av. Jiménez","09128","directa","E12"],
+                    ["Calle 19","","",""],["Calle 22","09129","",""],["Calle 26","09114","cercana","E13"],["Av. 39","09130","",""],
+                    ["Calle 45","","directa","E14"],["Calle 53","09131","",""],["Calle 57","09125","",""],["Calle 63","","directa","E15"],
+                    ["Flores","09127","",""],["Calle 72","09122","",""],["Calle 76","","directa","E16"]],columns=["estacion","codigo","metro","nombre_metro"])
+linea["orden"]=range(len(linea))
+linea=linea.merge(demanda,on="codigo",how="left",validate="m:1")
+pagina=st.radio("Página",["Resumen","Reaperturas","Metro","Torniquetes"],horizontal=True,label_visibility="collapsed")
+st.markdown("<div style='background:#E6332A;padding:14px 22px;border-radius:10px;margin-bottom:12px'><h2 style='color:white;margin:0'>TRONCAL CARACAS · "+pagina.upper()+"</h2></div>",unsafe_allow_html=True)
 if pagina=="Resumen":
-    umbral=st.sidebar.slider("Resaltar estaciones con demanda mayor a",0,14000,8000,step=500)
-
-    encabezado("TRONCAL CARACAS · REAPERTURAS Y METRO",
-               "¿Cómo se reacomoda la demanda cuando la Caracas recupera sus estaciones definitivas, y cuáles serán los nodos críticos cuando el metro entre en operación en 2028?")
-
-    c1,c2,c3,c4=st.columns(4)
-    with c1.container(border=True):
-        tarjeta("Reaperturas analizadas","3",str(series["fecha"].nunique())+" días hábiles")
-    with c2.container(border=True):
-        primero=ranking.sort_values("validaciones_pico",ascending=False).iloc[0]
-        tarjeta("Nodo crítico",numero(primero["validaciones_pico"]),primero["estacion_metro"]+" · validaciones en hora pico",ROJO)
-    with c3.container(border=True):
-        nueva=cambios[(cambios["evento"]=="Calle 72")&(cambios["rol"]=="nueva")]["despues"].sum()
-        cerrada=cambios[(cambios["evento"]=="Calle 72")&(cambios["rol"]=="cerrada")]["antes"].sum()
-        anillo("Demanda de la 76 recuperada por la 72",nueva/cerrada,ROJO)
-    with c4.container(border=True):
-        uso_max=((accesos["validaciones_promedio"]/60)/(accesos["torniquetes"]*18)).max()
-        anillo("Uso máximo de los torniquetes",uso_max,NARANJA)
-
-    with st.container(border=True):
-        fig=px.line(x=[-0.4,15.2],y=[0,0],title="Troncal Caracas · de sur a norte")
-        fig.update_traces(line=dict(color=ROJO,width=9),hoverinfo="skip",showlegend=False)
-        hoy=linea[linea["validaciones_pico"].notna()].copy()
-        hoy["color"]=TEXTO
-        hoy.loc[hoy["validaciones_pico"]>=umbral,"color"]=NARANJA
-        fig.add_scatter(x=hoy["orden"],y=[0]*len(hoy),mode="markers",name="TransMilenio hoy (tamaño = demanda)",
-                        marker=dict(size=12+hoy["validaciones_pico"]/650,color=hoy["color"],line=dict(color=AZUL_OSCURO,width=2)),
-                        customdata=hoy[["estacion","validaciones_pico"]],
-                        hovertemplate="%{customdata[0]}<br>%{customdata[1]:,.0f} validaciones en hora pico<extra></extra>")
-        obra=linea[linea["validaciones_pico"].isna()]
-        fig.add_scatter(x=obra["orden"],y=[0]*len(obra),mode="markers",name="En obra o cerrada",
-                        marker=dict(size=12,color=FONDO,line=dict(color=GRIS,width=2)),
-                        customdata=obra[["estacion"]],hovertemplate="%{customdata[0]}<br>En obra o cerrada<extra></extra>")
-        fig.add_scatter(x=linea["orden"],y=[-0.3]*len(linea),mode="text",text=linea["estacion"],
-                        textfont=dict(color=TEXTO,size=12),hoverinfo="skip",showlegend=False)
-        directa=linea[linea["conexion"]=="directa"]
-        cercana=linea[linea["conexion"]=="cercana"]
-        fig.add_scatter(x=directa["orden"],y=[0.45]*len(directa),mode="markers+text",name="Metro: conexión directa",
-                        text=directa["metro"].str.replace("Estación ","E"),textposition="top center",textfont=dict(color=TEXTO),
-                        marker=dict(symbol="square",size=18,color=ROJO,line=dict(color="white",width=1)),
-                        customdata=directa[["metro"]],hovertemplate="%{customdata[0]}<br>Conexión directa<extra></extra>")
-        fig.add_scatter(x=cercana["orden"],y=[0.45]*len(cercana),mode="markers+text",name="Metro: conexión cercana",
-                        text=cercana["metro"].str.replace("Estación ","E"),textposition="top center",textfont=dict(color=TEXTO),
-                        marker=dict(symbol="square-open",size=18,color=NARANJA,line=dict(width=3)),
-                        customdata=cercana[["metro"]],hovertemplate="%{customdata[0]}<br>Conexión cercana<extra></extra>")
-        fig.add_scatter(x=cruces["orden"],y=[-0.62]*len(cruces),mode="markers+text",text="↔ "+cruces["troncal"],
-                        textposition="bottom center",textfont=dict(color=GRIS,size=11),
-                        marker=dict(symbol="line-ns",size=16,line=dict(color=AZUL,width=3)),hoverinfo="skip",showlegend=False)
-        oscuro(fig,430)
-        fig.update_xaxes(visible=False,range=[-0.8,15.8])
-        fig.update_yaxes(visible=False,range=[-1.0,0.8])
-        st.plotly_chart(fig,width="stretch")
-        st.caption("Estaciones de TransMilenio en orden de sur a norte (no a escala). La demanda es el promedio de validaciones en hora pico en noviembre de 2026. La conexión con el metro sale de los planos oficiales de la Empresa Metro.")
-
-
+    top=st.slider("Resaltar las estaciones más cargadas (cuántas)",0,9,3)
+    st.write("¿Cómo se reacomoda la demanda cuando la Caracas recupera sus estaciones definitivas, y qué estaciones, por su demanda actual y su conexión con el metro, deben prepararse primero antes de 2028?")
+    a,b,c,d=st.columns(4)
+    nodo=ranking.sort_values("validaciones_pico").iloc[-1]
+    c72=cambios[cambios["evento"]=="Calle 72"]
+    a.metric("Reaperturas analizadas",3,str(series["fecha"].nunique())+" días hábiles",delta_color="off")
+    b.metric("Nodo crítico",nodo["estacion_metro"],f"{nodo['validaciones_pico']:,.0f} validaciones en hora pico",delta_color="off")
+    c.metric("Demanda de la 76 recuperada por la 72",f"{c72[c72['rol']=='nueva']['despues'].sum()/c72[c72['rol']=='cerrada']['antes'].sum():.0%}")
+    d.metric("Uso máximo de los torniquetes",f"{(accesos['validaciones_promedio']/60/(accesos['torniquetes']*18)).max():.0%}","con 18 pasajeros por minuto",delta_color="off")
+    linea["tipo"]="en obra o cerrada"
+    linea.loc[linea["validaciones_pico"].notna(),"tipo"]="hoy"
+    linea.loc[linea["validaciones_pico"].rank(ascending=False)<=top,"tipo"]="de las más cargadas"
+    estaciones=linea.assign(y=0,forma="estación",etiqueta=linea["estacion"],tamano=linea["validaciones_pico"].fillna(1500))
+    metro=linea[linea["metro"]!=""].assign(y=0.5,forma="metro",etiqueta=linea["nombre_metro"],tamano=5000,tipo="metro "+linea["metro"])
+    fig=px.scatter(pd.concat([estaciones,metro]),x="orden",y="y",size="tamano",size_max=35,color="tipo",symbol="forma",text="etiqueta",
+                   color_discrete_map=colores,symbol_map={"estación":"circle","metro":"square"},hover_data={"validaciones_pico":":,.0f"},
+                   title="Troncal Caracas de sur a norte (no a escala)")
+    fig.add_hline(y=0,line_color="#E6332A",line_width=8,layer="below")
+    fig.update_traces(textposition="bottom center")
+    fig.update_layout(height=450,xaxis_visible=False,yaxis_visible=False,yaxis_range=[-0.5,0.9],legend_title="")
+    st.plotly_chart(fig,width="stretch")
+    st.caption("Tamaño: validaciones en hora pico (noviembre 2026). Cuadros: estaciones del metro según los planos oficiales.")
+    st.warning("Limitaciones: las validaciones son entradas pagas, no personas. En las estaciones 11, 14 y 15 del metro la demanda es un promedio de estaciones cercanas. No sabemos cuántos transbordos traerá el metro.")
 elif pagina=="Reaperturas":
-    eventos=st.sidebar.pills("Reapertura",["Calle 72","Calle 53","Calle 26"],selection_mode="multi",default=["Calle 72","Calle 53","Calle 26"])
-    roles=st.sidebar.pills("Rol de la estación",["nueva","cerrada","vecina"],selection_mode="multi",default=["nueva","cerrada","vecina"])
-
-    encabezado("REAPERTURAS","Qué pasó con la demanda 3 semanas antes y 3 semanas después de que reabrieron las estaciones definitivas")
-
-    if len(eventos)==0:
-        st.warning("Escoge al menos una reapertura en los filtros.")
-    else:
-        comp_f=comparaciones[comparaciones["evento"].isin(eventos)]
-        series_f=series[series["evento"].isin(eventos)]
-        cambios_f=cambios[cambios["evento"].isin(eventos)&cambios["rol"].isin(roles)]
-
-        c1,c2=st.columns(2)
-        with c1.container(border=True):
-            fig=px.bar(comp_f,x="evento",y="cambio_pct",color="grupo",barmode="group",text="cambio_pct",
-                       color_discrete_map=colores,title="Cambio % de las validaciones: zona vs control",
-                       labels={"evento":"","cambio_pct":"Cambio (%)"})
-            fig.update_traces(texttemplate="%{text:.1f}%")
-            st.plotly_chart(oscuro(fig),width="stretch")
-        with c2.container(border=True):
-            fig=px.line(series_f,x="fecha",y="validaciones",color="grupo",facet_col="evento",markers=True,
-                        color_discrete_map=colores,title="Validaciones diarias antes y después",
-                        labels={"fecha":"","validaciones":"Validaciones por día"})
-            fig.update_xaxes(matches=None,showticklabels=False)
-            fig.for_each_annotation(lambda a:a.update(text=a.text.split("=")[-1]))
-            st.plotly_chart(oscuro(fig),width="stretch")
-
-        with st.container(border=True):
-            if len(cambios_f)==0:
-                st.warning("Escoge al menos un rol de estación.")
-            else:
-                fig=px.bar(cambios_f,x="cambio",y="estacion",color="rol",facet_col="evento",orientation="h",
-                           color_discrete_map=colores,title="Cambio en validaciones diarias por estación",
-                           labels={"cambio":"Cambio (validaciones por día)","estacion":""})
-                fig.update_yaxes(matches=None,showticklabels=True)
-                fig.for_each_annotation(lambda a:a.update(text=a.text.split("=")[-1]))
-                st.plotly_chart(oscuro(fig,420),width="stretch")
-
-        with st.container(border=True):
-            st.markdown(f"<div style='color:{ROJO};font-weight:700'>Hallazgo</div>",unsafe_allow_html=True)
-            st.write("En la Calle 72 la zona creció casi igual que el control: fue un reacomodo, la gente de la 76 se pasó a la 72, Héroes y Polo. En la Calle 53 la zona creció casi 5 puntos más que el control, así que llegaron usuarios nuevos. En la Calle 26 todo bajó por las vacaciones. En los tres casos la gente cambió de estación dentro de la misma zona, no de troncal.")
-
-
+    f1,f2=st.columns(2)
+    eventos=f1.multiselect("Reaperturas",["Calle 72","Calle 53","Calle 26"],default=["Calle 72","Calle 53","Calle 26"])
+    evento=f2.selectbox("Reapertura para ver por estación",["Calle 72","Calle 53","Calle 26"])
+    a,b=st.columns(2)
+    a.plotly_chart(px.bar(comp[comp["evento"].isin(eventos)],x="evento",y="cambio_pct",color="grupo",barmode="group",text="cambio_pct",
+                          color_discrete_map=colores,title="Cambio % de las validaciones: zona vs control"),width="stretch")
+    diaria=series[series["evento"].isin(eventos)&(series["grupo"]=="zona")].copy()
+    diaria["fecha"]=pd.to_datetime(diaria["fecha"])
+    promedio_antes=diaria[diaria["periodo"]=="antes"].groupby("evento")["validaciones"].mean().reset_index(name="promedio_antes")
+    reapertura=diaria[diaria["periodo"]=="después"].groupby("evento")["fecha"].min().reset_index(name="reapertura")
+    diaria=diaria.merge(promedio_antes,on="evento",validate="m:1").merge(reapertura,on="evento",validate="m:1")
+    diaria["indice"]=(diaria["validaciones"]/diaria["promedio_antes"]*100).round(1)
+    diaria["dia"]=(diaria["fecha"]-diaria["reapertura"]).dt.days
+    linea_indice=px.scatter(diaria,x="dia",y="indice",color="evento",opacity=0.4,trendline="rolling",trendline_options=dict(window=5,min_periods=1),color_discrete_map={"Calle 72":"#E6332A","Calle 53":"#FF6B3D","Calle 26":"#F5C04A"},
+                labels={"dia":"Días desde la reapertura","indice":"Índice (antes = 100)"},title="Tendencia de la zona: promedio de 5 días (promedio de antes = 100)")
+    b.plotly_chart(linea_indice.add_hline(y=100,line_dash="dot").add_vline(x=0,line_dash="dot"),width="stretch")
+    estaciones=cambios[cambios["evento"]==evento].copy()
+    cerrada=estaciones[estaciones["rol"]=="cerrada"]["estacion"].iloc[0]
+    nueva=estaciones[estaciones["rol"]=="nueva"]["estacion"].iloc[0]
+    estaciones.loc[estaciones["rol"].isin(["cerrada","nueva"]),"estacion"]=cerrada+" → "+nueva
+    estaciones=estaciones.groupby("estacion")[["antes","despues"]].sum().reset_index().sort_values("antes",ascending=False)
+    puntos=pd.concat([estaciones.assign(periodo="antes",validaciones=estaciones["antes"]),estaciones.assign(periodo="después",validaciones=estaciones["despues"])])
+    pesas=px.scatter(puntos,x="validaciones",y="estacion",color="periodo",color_discrete_map={"antes":"#9A9AB0","después":"#E6332A"},
+                     title="Validaciones diarias por estación antes → después: "+evento)
+    for est,antes,despues in zip(estaciones["estacion"],estaciones["antes"],estaciones["despues"]):
+        pesas.add_shape(type="line",x0=antes,x1=despues,y0=est,y1=est,line_color="#9A9AB0",line_width=3,layer="below")
+    st.plotly_chart(pesas.update_traces(marker_size=14),width="stretch")
+    st.info("Cuando una estación reabre, la gente se pasa en pocas semanas a la más cercana: la 72 recibió el 103 % de la demanda de la 76. En la 72 fue un reacomodo (la zona creció casi igual que el control), en la 53 llegaron usuarios nuevos y en la 26 influyeron las vacaciones. En los tres casos la gente cambió de estación dentro de la misma zona, no de troncal.")
+    st.success("Recomendación: reforzar rutas en las primeras semanas de cada conexión con el metro, que es cuando la gente se reacomoda.")
 elif pagina=="Metro":
-    conexiones=st.sidebar.pills("Conexión con el metro",["directa","cercana"],selection_mode="multi",default=["directa","cercana"])
-
-    encabezado("NODOS CRÍTICOS PARA EL METRO","Cuánta gente de TransMilenio hay hoy en hora pico alrededor de cada estación del metro en la Caracas")
-
-    if len(conexiones)==0:
-        st.warning("Escoge al menos un tipo de conexión en los filtros.")
-    else:
-        ranking_f=ranking[ranking["integracion"].isin(conexiones)].sort_values("validaciones_pico")
-        zonas_f=zonas[zonas["integracion"].isin(conexiones)]
-
-        c1,c2=st.columns(2)
-        with c1.container(border=True):
-            fig=px.bar(ranking_f,x="validaciones_pico",y="estacion_metro",color="integracion",orientation="h",text="validaciones_pico",
-                       color_discrete_map=colores,title="Demanda alrededor de cada estación del metro",
-                       labels={"validaciones_pico":"Validaciones en hora pico","estacion_metro":""})
-            fig.update_traces(texttemplate="%{text:,.0f}")
-            fig.update_yaxes(categoryorder="total ascending")
-            st.plotly_chart(oscuro(fig),width="stretch")
-        with c2.container(border=True):
-            hoy=linea[linea["validaciones_pico"].notna()].copy()
-            hoy["con_metro"]="no"
-            hoy.loc[hoy["codigo"].isin(zonas["codigo"]),"con_metro"]="sí"
-            hoy=hoy.sort_values("validaciones_pico",ascending=False)
-            fig=px.bar(hoy,x="estacion",y="validaciones_pico",color="con_metro",color_discrete_map=colores,
-                       category_orders={"estacion":list(hoy["estacion"])},title="Demanda hoy en las estaciones de la Caracas",
-                       labels={"estacion":"","validaciones_pico":"Validaciones en hora pico","con_metro":"Atiende zona del metro"})
-            st.plotly_chart(oscuro(fig),width="stretch")
-
-        c1,c2=st.columns([3,2])
-        with c1.container(border=True):
-            st.markdown(f"<div style='text-align:center;font-weight:700'>Estaciones de TransMilenio que atienden cada estación del metro</div>",unsafe_allow_html=True)
-            st.dataframe(zonas_f[["estacion_metro","direccion","integracion","estacion_referencia","validaciones_pico"]],hide_index=True,width="stretch")
-        with c2.container(border=True):
-            st.markdown(f"<div style='color:{ROJO};font-weight:700'>Hallazgo</div>",unsafe_allow_html=True)
-            st.write("La estación 16 (Calle 72 a 74) es el nodo crítico: casi 13.000 validaciones en hora pico, un 50 % más que la siguiente, y conexión directa con TransMilenio. Las estaciones 14, 12 y 15 tienen demandas parecidas. Donde hoy no hay estación, la demanda es el promedio de las dos más cercanas.")
-
-
-elif pagina=="Torniquetes":
-    est_t=st.sidebar.pills("Estación",["Calle 72","Calle 53","Calle 26"],selection_mode="multi",default=["Calle 72","Calle 53","Calle 26"])
-    acc_t=st.sidebar.pills("Acceso",["norte","sur"],selection_mode="multi",default=["norte","sur"])
-    horas=st.sidebar.slider("Horas",4,23,(5,22))
-    capacidad=st.sidebar.slider("Capacidad por torniquete piso a techo (pasajeros por minuto)",8,18,18)
-
-    encabezado("TORNIQUETES","Qué tan cerca están los accesos de su capacidad en cada hora del día")
-
-    acc_f=accesos[accesos["estacion"].isin(est_t)&accesos["acceso"].isin(acc_t)&accesos["hora"].between(horas[0],horas[1])].copy()
-    if len(acc_f)==0:
-        st.warning("Escoge al menos una estación y un acceso en los filtros.")
-    else:
-        acc_f["uso"]=(acc_f["validaciones_promedio"]/60)/(acc_f["torniquetes"]*capacidad)
-
-        with st.container(border=True):
-            fig=px.density_heatmap(acc_f,x="hora",y="fila",z="uso",histfunc="sum",text_auto=".0%",nbinsx=horas[1]-horas[0]+1,
-                                   color_continuous_scale=[AZUL_OSCURO,NARANJA,ROJO],range_color=[0,1],
-                                   title="Uso de la capacidad de los torniquetes por hora",labels={"hora":"Hora","fila":"","uso":"Uso"})
-            fig.update_layout(coloraxis_colorbar=dict(title="Uso",tickformat=".0%"))
-            st.plotly_chart(oscuro(fig,380),width="stretch")
-
-        c1,c2=st.columns(2)
-        with c1.container(border=True):
-            maximo=acc_f.groupby(["fila","acceso"])["uso"].max().reset_index()
-            fig=px.bar(maximo,x="fila",y="uso",color="acceso",text="uso",color_discrete_map=colores,
-                       title="Uso en la hora más cargada",labels={"fila":"","uso":"Uso"})
-            fig.update_traces(texttemplate="%{text:.0%}")
-            fig.update_yaxes(tickformat=".0%",range=[0,1.1])
-            fig.add_hline(y=1,line_dash="dash",line_color=ROSA,annotation_text="capacidad máxima",annotation_font_color=ROSA)
-            st.plotly_chart(oscuro(fig),width="stretch")
-        with c2.container(border=True):
-            fig=px.line(acc_f,x="hora",y="validaciones_promedio",color="fila",markers=True,
-                        title="Validaciones por hora en cada acceso",labels={"hora":"Hora","validaciones_promedio":"Validaciones por hora"},
-                        color_discrete_sequence=[ROJO,AZUL,NARANJA,"#A3A8F0",ROSA,GRIS])
-            st.plotly_chart(oscuro(fig),width="stretch")
-
-        st.caption("Uso = validaciones por minuto ÷ (torniquetes × capacidad). Las estaciones nuevas tienen torniquetes piso a techo (tambor giratorio). Los fabricantes indican hasta 18 pasajeros por minuto con control de acceso, en condiciones ideales; en la estación real (tarjeta, maletas, filas) pasan menos, por eso el slider deja bajar la capacidad. Promedio de los días hábiles después de cada reapertura.")
-
-
-elif pagina=="Conclusiones":
-    encabezado("CONCLUSIONES","Qué encontramos, qué recomendamos y qué no podemos saber con estos datos")
-
-    c1,c2,c3=st.columns(3)
-    with c1.container(border=True):
-        st.markdown(f"<div style='color:{ROJO};font-size:20px;font-weight:700'>Hallazgos</div>",unsafe_allow_html=True)
-        st.write("Cuando reabrieron las estaciones definitivas, la gente se pasó rápido a la estación nueva más cercana, sin cambiar de troncal.")
-        st.write("La zona de la Calle 72 y 74 (estación 16 del metro) es la más cargada de la Caracas y tendrá conexión directa con el metro.")
-    with c2.container(border=True):
-        st.markdown(f"<div style='color:{NARANJA};font-size:20px;font-weight:700'>Recomendaciones</div>",unsafe_allow_html=True)
-        st.write("Preparar primero la zona de la Calle 72 y 74: accesos, torniquetes y frecuencias.")
-        st.write("Tener lista la definitiva de la Av. Jiménez antes de 2028.")
-        st.write("Medir la demanda de Hospital, Calle 45 y Calle 63 cuando abran.")
-    with c3.container(border=True):
-        st.markdown(f"<div style='color:{AZUL};font-size:20px;font-weight:700'>Limitaciones</div>",unsafe_allow_html=True)
-        st.write("Las validaciones son entradas pagas, no personas, y no cuentan los transbordos internos.")
-        st.write("En las estaciones 11, 14 y 15 la demanda es un promedio de estaciones cercanas.")
-        st.write("No sabemos cuántos transbordos traerá el metro.")
-
-    with st.container(border=True):
-        st.markdown(f"<div style='color:{GRIS};font-weight:700'>Fuentes</div>",unsafe_allow_html=True)
-        st.write("Validaciones del componente troncal (datos abiertos de TransMilenio, 2026). Planos de las estaciones 10 a 16 (Empresa Metro de Bogotá). Video de dron de la obra (@VIDJCB, noviembre 2026). ITDP, The BRT Planning Guide.")
+    conexiones=st.multiselect("Conexión con el metro",["directa","cercana"],default=["directa","cercana"])
+    a,b=st.columns(2)
+    z=zonas[zonas["integracion"].isin(conexiones)]
+    z=z.merge(z.groupby("estacion_metro").size().reset_index(name="n"),on="estacion_metro",validate="m:1")
+    z["aporte"]=(z["validaciones_pico"]/z["n"]).round()
+    fig=px.treemap(z,path=["estacion_metro","estacion_referencia"],values="aporte",color="integracion",color_discrete_map=colores,
+                   title="Demanda en hora pico alrededor de cada estación del metro y de dónde sale")
+    a.plotly_chart(fig.update_traces(textinfo="label+value"),width="stretch")
+    hoy=linea[linea["validaciones_pico"].notna()].sort_values("validaciones_pico",ascending=False)
+    hoy["zona del metro"]=hoy["codigo"].isin(zonas["codigo"]).map({True:"sí",False:"no"})
+    b.plotly_chart(px.bar(hoy,x="estacion",y="validaciones_pico",color="zona del metro",color_discrete_map=colores,
+                          title="Demanda hoy en las estaciones de la Caracas"),width="stretch")
+    st.dataframe(zonas[zonas["integracion"].isin(conexiones)],hide_index=True,width="stretch")
+    st.info("La estación 16 (Calle 72 a 74) es el nodo crítico: casi 13.000 validaciones en hora pico, un 50 % más que la siguiente, y conexión directa con TransMilenio.")
+    st.success("Recomendación: diseñar la conexión de la estación 16 para al menos 13.000 validaciones en hora pico y medir la demanda de Hospital, Calle 45 y Calle 63 cuando abran.")
+else:
+    f1,f2,f3=st.columns(3)
+    filas=f1.multiselect("Estación y acceso",list(accesos["fila"].unique()),default=list(accesos["fila"].unique()))
+    horas=f2.slider("Horas",4,23,(5,22))
+    capacidad=f3.slider("Capacidad por torniquete piso a techo (pasajeros por minuto)",8,18,18)
+    f=accesos[accesos["fila"].isin(filas)&accesos["hora"].between(horas[0],horas[1])].copy()
+    f["uso"]=f["validaciones_promedio"]/60/(f["torniquetes"]*capacidad)
+    st.plotly_chart(px.density_heatmap(f,x="hora",y="fila",z="uso",histfunc="sum",nbinsx=horas[1]-horas[0]+1,text_auto=".0%",range_color=[0,1],
+                                       color_continuous_scale=["#4B4F8C","#FF6B3D","#E6332A"],title="Uso de la capacidad de los torniquetes por hora"),width="stretch")
+    a,b=st.columns(2)
+    a.subheader("Uso en la hora más cargada")
+    maximo=f.groupby("fila")["uso"].max().reset_index()
+    for fila,uso in zip(maximo["fila"],maximo["uso"]):
+        a.progress(min(uso,1.0),text=fila+": "+f"{uso:.0%}")
+    b.plotly_chart(px.line(f,x="hora",y="validaciones_promedio",color="fila",title="Validaciones por hora en cada acceso"),width="stretch")
+    st.caption("Uso = validaciones por minuto ÷ (torniquetes × capacidad). Los torniquetes piso a techo dejan pasar hasta 18 personas por minuto según los fabricantes; en la estación real pasan menos.")
+    st.info("Los accesos norte de la Calle 72 y la Calle 26 llegarían al 81 % de su capacidad en los días más cargados con torniquetes piso a techo de 10 personas por minuto.")
+    st.success("Recomendación: agregar 2 torniquetes en el acceso norte de la Calle 72 (de 7 a 9) y 1 en el de la Calle 26 (de 5 a 6), y medir en campo cuántas personas pasan por minuto.")

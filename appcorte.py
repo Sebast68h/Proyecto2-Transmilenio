@@ -13,6 +13,7 @@ series=pd.read_csv(ruta+"series_diarias.csv")
 ranking=pd.read_csv(ruta+"ranking_metro.csv")
 zonas=pd.read_csv(ruta+"zonas_metro.csv",dtype={"codigo":str})
 demanda=pd.read_csv(ruta+"demanda_pico.csv",dtype={"codigo":str})
+vagones=pd.read_csv(ruta+"demanda_vagones.csv",dtype={"codigo":str})[["codigo","num_vag","por_vagon"]]
 tablas=[]
 for est,n in [("calle72",5),("calle53",6),("calle26",5)]:
     for acc in ["norte","sur"]:
@@ -24,12 +25,12 @@ linea=pd.DataFrame([["Hortúa","09107","",""],["Hospital","","directa","E11"],["
                     ["Calle 45","","directa","E14"],["Calle 53","09131","",""],["Calle 57","09125","",""],["Calle 63","","directa","E15"],
                     ["Flores","09127","",""],["Calle 72","09122","",""],["Calle 76","","directa","E16"]],columns=["estacion","codigo","metro","nombre_metro"])
 linea["orden"]=range(len(linea))
-linea=linea.merge(demanda,on="codigo",how="left",validate="m:1")
+linea=linea.merge(demanda,on="codigo",how="left",validate="m:1").merge(vagones,on="codigo",how="left",validate="m:1")
 pagina=st.sidebar.radio("Página",["Resumen","Reaperturas","Metro","Torniquetes","Conclusiones"])
 st.markdown("<div style='background:#E6332A;padding:14px 22px;border-radius:10px;margin-bottom:12px'><h2 style='color:white;margin:0'>TRONCAL CARACAS · "+pagina.upper()+"</h2></div>",unsafe_allow_html=True)
 if pagina=="Resumen":
     umbral=st.sidebar.slider("Resaltar estaciones con demanda mayor a",0,14000,8000,step=500)
-    st.write("¿Cómo se reacomoda la demanda cuando la Caracas recupera sus estaciones definitivas, y cuáles serán los nodos críticos cuando el metro entre en operación en 2028?")
+    st.write("¿Cómo se reacomoda la demanda cuando la Caracas recupera sus estaciones definitivas, y qué estaciones, por su demanda actual y su conexión con el metro, deben prepararse primero antes de 2028?")
     a,b,c,d=st.columns(4)
     top=ranking.sort_values("validaciones_pico").iloc[-1]
     c72=cambios[cambios["evento"]=="Calle 72"]
@@ -68,12 +69,12 @@ elif pagina=="Metro":
     a.plotly_chart(px.bar(ranking[ranking["integracion"].isin(conexiones)].sort_values("validaciones_pico"),x="validaciones_pico",y="estacion_metro",
                           color="integracion",orientation="h",text="validaciones_pico",color_discrete_map=colores,
                           title="Demanda en hora pico alrededor de cada estación del metro"),width="stretch")
-    hoy=linea[linea["validaciones_pico"].notna()].sort_values("validaciones_pico",ascending=False)
+    hoy=linea[linea["por_vagon"].notna()].sort_values("por_vagon",ascending=False)
     hoy["zona del metro"]=hoy["codigo"].isin(zonas["codigo"]).map({True:"sí",False:"no"})
-    b.plotly_chart(px.bar(hoy,x="estacion",y="validaciones_pico",color="zona del metro",color_discrete_map=colores,
-                          title="Demanda hoy en las estaciones de la Caracas"),width="stretch")
+    b.plotly_chart(px.bar(hoy,x="estacion",y="por_vagon",color="zona del metro",color_discrete_map=colores,hover_data=["validaciones_pico","num_vag"],
+                          title="Validaciones en hora pico por vagón en las estaciones de la Caracas"),width="stretch")
     st.dataframe(zonas[zonas["integracion"].isin(conexiones)],hide_index=True,width="stretch")
-    st.info("La estación 16 (Calle 72 a 74) es el nodo crítico: casi 13.000 validaciones en hora pico, un 50 % más que la siguiente, y conexión directa con TransMilenio.")
+    st.info("La estación 16 (Calle 72 a 74) es el nodo crítico: casi 13.000 validaciones en hora pico, un 50 % más que la siguiente, y la Calle 72 es la más apretada por vagón. Flores, con solo 2 vagones, es la segunda más apretada.")
 elif pagina=="Torniquetes":
     filas=st.sidebar.multiselect("Estación y acceso",list(accesos["fila"].unique()),default=list(accesos["fila"].unique()))
     horas=st.sidebar.slider("Horas",4,23,(5,22))
@@ -81,7 +82,7 @@ elif pagina=="Torniquetes":
     f=accesos[accesos["fila"].isin(filas)&accesos["hora"].between(horas[0],horas[1])].copy()
     f["uso"]=f["validaciones_promedio"]/60/(f["torniquetes"]*capacidad)
     st.plotly_chart(px.density_heatmap(f,x="hora",y="fila",z="uso",histfunc="sum",nbinsx=horas[1]-horas[0]+1,text_auto=".0%",range_color=[0,1],
-                                       color_continuous_scale=["#4B4F8C","#F27F5D","#E6332A"],title="Uso de la capacidad de los torniquetes por hora"),width="stretch")
+                                       color_continuous_scale=["#4B4F8C","#FF6B3D","#E6332A"],title="Uso de la capacidad de los torniquetes por hora"),width="stretch")
     a,b=st.columns(2)
     fig=px.bar(f.groupby(["fila","acceso"])["uso"].max().reset_index(),x="fila",y="uso",color="acceso",color_discrete_map=colores,title="Uso en la hora más cargada")
     a.plotly_chart(fig.add_hline(y=1,line_dash="dash",line_color="#FF3D7F"),width="stretch")
@@ -89,9 +90,9 @@ elif pagina=="Torniquetes":
     st.caption("Uso = validaciones por minuto ÷ (torniquetes × capacidad). Los torniquetes piso a techo dejan pasar hasta 18 personas por minuto según los fabricantes; en la estación real pasan menos.")
 else:
     a,b,c=st.columns(3)
-    a.subheader("Hallazgos")
-    a.write("La gente se pasó rápido a la estación nueva más cercana, sin cambiar de troncal. La zona de la Calle 72 y 74 es la más cargada y tendrá conexión directa con el metro.")
+    a.subheader("Conclusiones")
+    a.write("Cuando una estación reabre, la gente se pasa en pocas semanas a la más cercana (la 72 recibió el 103 % de la demanda de la 76). La zona de la Calle 72 a 74 es el nodo crítico: casi 13.000 validaciones en hora pico y la más apretada por vagón. Su acceso norte llegaría al 92 % con torniquetes piso a techo de 10 personas por minuto.")
     b.subheader("Recomendaciones")
-    b.write("Preparar primero la zona de la Calle 72 y 74 (accesos, torniquetes y frecuencias), tener lista la definitiva de la Av. Jiménez y medir Hospital, Calle 45 y Calle 63 cuando abran.")
+    b.write("Pasar de 5 a 7 torniquetes en el acceso norte de la Calle 72. Diseñar la conexión de la estación 16 para al menos 13.000 validaciones en hora pico. Reforzar el servicio en Flores mientras abre la Calle 63. Reforzar rutas en las primeras semanas de cada conexión. Medir en campo los torniquetes piso a techo y la demanda de Hospital, Calle 45 y Calle 63.")
     c.subheader("Limitaciones")
-    c.write("Las validaciones son entradas pagas, no personas. En las estaciones 11, 14 y 15 la demanda es un promedio. No sabemos cuántos transbordos traerá el metro.")
+    c.write("Las validaciones son entradas pagas, no personas. En las estaciones 11, 14 y 15 la demanda es un promedio de estaciones cercanas. No sabemos cuántos transbordos traerá el metro.")
