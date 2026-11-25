@@ -6,6 +6,7 @@ px.defaults.template="plotly_white"
 colores={"zona":"#D52B1E","control":"#9A968E","nueva":"#D52B1E","cerrada":"#8E1B13","vecina":"#9A968E","directa":"#D52B1E",
          "cercana":"#F08A7E","norte":"#D52B1E","sur":"#9A968E","sí":"#D52B1E","no":"#C9C5BC","hoy":"#6B6B6B",
          "de las más cargadas":"#D52B1E","en obra o cerrada":"#C9C5BC","metro directa":"#8E1B13","metro cercana":"#F08A7E","(?)":"#C9C5BC"}
+capacidad_por_torniquete=20
 ruta="data/processed/"
 comp=pd.read_csv(ruta+"comparacion_control.csv")
 cambios=pd.read_csv(ruta+"cambio_estaciones.csv")
@@ -36,7 +37,7 @@ if pagina=="Resumen":
     a.metric("Reaperturas analizadas",3,str(series["fecha"].nunique())+" días hábiles",delta_color="off")
     b.metric("Nodo crítico",nodo["estacion_metro"],f"{nodo['validaciones_pico']:,.0f} validaciones en hora pico",delta_color="off")
     c.metric("Demanda de la 76 recuperada por la 72",f"{c72[c72['rol']=='nueva']['despues'].sum()/c72[c72['rol']=='cerrada']['antes'].sum():.0%}")
-    d.metric("Uso máximo de los torniquetes",f"{(accesos['validaciones_maximo']/60/(accesos['torniquetes']*10)).max():.0%}","día más cargado, 10 pasajeros por minuto",delta_color="off")
+    d.metric("Uso máximo de los torniquetes",f"{(accesos['validaciones_maximo']/60/(accesos['torniquetes']*capacidad_por_torniquete)).max():.0%}","día más cargado, "+str(capacidad_por_torniquete)+" pasajeros por minuto",delta_color="off")
     linea["tipo"]="en obra o cerrada"
     linea.loc[linea["validaciones_pico"].notna(),"tipo"]="hoy"
     linea.loc[linea["validaciones_pico"].rank(ascending=False)<=top,"tipo"]="de las más cargadas"
@@ -101,7 +102,7 @@ else:
     f1,f2,f3=st.columns(3)
     filas=f1.multiselect("Estación y acceso",list(accesos["fila"].unique()),default=list(accesos["fila"].unique()))
     horas=f2.slider("Horas",4,23,(5,22))
-    capacidad=f3.slider("Capacidad por torniquete piso a techo (pasajeros por minuto)",8,18,10)
+    capacidad=f3.slider("Capacidad por torniquete piso a techo (pasajeros por minuto)",8,20,capacidad_por_torniquete)
     f=accesos[accesos["fila"].isin(filas)&accesos["hora"].between(horas[0],horas[1])].copy()
     f["uso"]=f["validaciones_promedio"]/60/(f["torniquetes"]*capacidad)
     f["uso_dia_cargado"]=f["validaciones_maximo"]/60/(f["torniquetes"]*capacidad)
@@ -113,6 +114,6 @@ else:
     for fila,uso in zip(maximo["fila"],maximo["uso_dia_cargado"]):
         a.progress(min(uso,1.0),text=fila+": "+f"{uso:.0%}")
     b.plotly_chart(px.line(f,x="hora",y="validaciones_promedio",color="fila",title="Validaciones por hora en cada acceso"),width="stretch")
-    st.caption("Uso = validaciones por minuto ÷ (torniquetes × capacidad). Los torniquetes piso a techo dejan pasar hasta 18 personas por minuto según los fabricantes; en la estación real pasan menos.")
+    st.caption("Uso = validaciones por minuto ÷ (torniquetes × capacidad). Los torniquetes piso a techo dejan pasar hasta 20 personas por minuto según los fabricantes; en la estación real pasan menos.")
     st.info("Los accesos norte de la Calle 72 y la Calle 26 llegarían al 81 % de su capacidad en los días más cargados con torniquetes piso a techo de 10 personas por minuto.")
     st.success("Recomendación: agregar 2 torniquetes en el acceso norte de la Calle 72 (de 7 a 9) y 1 en el de la Calle 26 (de 5 a 6), y medir en campo cuántas personas pasan por minuto.")
