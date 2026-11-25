@@ -6,7 +6,7 @@ Integrantes: Sebastián Moreno, Miguel, Juan y Mateo.
 
 ## Enlaces
 
-- Dashboard: [pegar link .streamlit.app]
+- Dashboard: [http://10.0.0.12:8501]
 - Presentación: [reports/presentacion.pdf](reports/presentacion.pdf) · [Canva](https://www.canva.com/d/sj8RH_3zHK1KxVs)
 
 ## Problema
